@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "homepage": "https://manikandanr7598.github.io/roster",
+  "homepage": "https://manikandanr7598.github.io/roster1.2",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
