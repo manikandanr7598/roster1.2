@@ -48,24 +48,36 @@ const Pay: React.FC = () => {
     return hours + (mins / 60);
   };
 
-  const isDateInPeriod = (dateStr: string): boolean => {
-    const date = new Date(dateStr);
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const startOfWeek = new Date(currentDate);
-    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    const startOfFortnight = new Date(startOfWeek);
-    const endOfFortnight = new Date(startOfFortnight);
-    endOfFortnight.setDate(startOfFortnight.getDate() + 13);
+  // Helper: Get date of week (like Roster.tsx)
+  const getDateOfWeek = (startDate: Date, dayOffset: number): Date => {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() - startDate.getDay() + 1 + dayOffset);
+    return date;
+  };
 
+  const isDateInPeriod = (dateStr: string): boolean => {
     if (selectedPeriod === 'month') {
-      return date.getFullYear() === year && date.getMonth() === month;
+      const [year, month] = dateStr.split('-').map(Number);
+      return year === currentDate.getFullYear() && month === currentDate.getMonth() + 1;
     } else if (selectedPeriod === 'fortnight') {
-      return date >= startOfFortnight && date <= endOfFortnight;
-    } else {
-      return date >= startOfWeek && date <= endOfWeek;
+      const startOfFortnight = getDateOfWeek(currentDate, 0);
+      const startStr = formatLocalDate(startOfFortnight);
+      // Now check if dateStr is between startStr and startStr + 13 days
+      for (let i = 0; i <=13; i++) {
+        const d = new Date(startOfFortnight);
+        d.setDate(startOfFortnight.getDate() + i);
+        if (dateStr === formatLocalDate(d)) return true;
+      }
+      return false;
+    } else { // weekly
+      const startOfWeek = getDateOfWeek(currentDate, 0);
+      const startStr = formatLocalDate(startOfWeek);
+      for (let i =0; i <=6; i++) {
+        const d = new Date(startOfWeek);
+        d.setDate(startOfWeek.getDate() + i);
+        if (dateStr === formatLocalDate(d)) return true;
+      }
+      return false;
     }
   };
 
@@ -75,8 +87,10 @@ const Pay: React.FC = () => {
   };
 
   const employeePay = employees.map(employee => {
-    const employeeShifts = shifts.filter(s => s.employeeId === employee.id && isDateInPeriod(s.date));
+    const employeeShifts = shifts.filter(s => s.employeeId === employee.id && isDateInPeriod(s.date) && s.status !== 'Cancelled');
+    console.log('Employee:', employee.firstName, employee.lastName, 'Shifts:', employeeShifts.map(s => ({date: s.date, start: s.startTime, end: s.endTime})));
     const totalHours = employeeShifts.reduce((acc, shift) => acc + calculateHours(shift.startTime, shift.endTime), 0);
+    console.log('Total hours for employee:', totalHours);
     const hourlyRate = getDepartmentRate(employee.department);
     const totalPay = totalHours * hourlyRate;
     return { employee, totalHours, hourlyRate, totalPay };
@@ -119,14 +133,12 @@ const Pay: React.FC = () => {
     if (selectedPeriod === 'month') {
       return currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     } else if (selectedPeriod === 'fortnight') {
-      const start = new Date(currentDate);
-      start.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+      const start = getDateOfWeek(currentDate, 0);
       const end = new Date(start);
       end.setDate(start.getDate() + 13);
       return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
     } else {
-      const start = new Date(currentDate);
-      start.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+      const start = getDateOfWeek(currentDate, 0);
       const end = new Date(start);
       end.setDate(start.getDate() + 6);
       return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
