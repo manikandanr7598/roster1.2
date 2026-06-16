@@ -24,6 +24,8 @@ const Pay: React.FC = () => {
           getShifts(),
           getDepartments()
         ]);
+        console.log('Fetched employees:', empData);
+        console.log('Fetched shifts:', shiftData);
         setEmployees(empData);
         setShifts(shiftData);
         setDepartments(deptData);
