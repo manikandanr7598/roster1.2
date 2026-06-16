@@ -16,7 +16,6 @@ function App() {
       <div className="flex h-screen bg-gray-50 overflow-hidden">
         <Sidebar 
           isMobileOpen={isMobileSidebarOpen} 
-          onToggleMobile={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} 
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
         />
         <main className="flex-1 overflow-y-auto relative">

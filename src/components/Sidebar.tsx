@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { mockEmployees } from '../utils/mockData';
 
-const Sidebar: React.FC<{ isMobileOpen: boolean; onToggleMobile: () => void; onCloseMobile: () => void }> = ({ isMobileOpen, onToggleMobile, onCloseMobile }) => {
+const Sidebar: React.FC<{ isMobileOpen: boolean; onCloseMobile: () => void }> = ({ isMobileOpen, onCloseMobile }) => {
   const [isDesktopOpen, setIsDesktopOpen] = React.useState(true);
   const currentUser = mockEmployees[0]; // John Smith as admin
 
