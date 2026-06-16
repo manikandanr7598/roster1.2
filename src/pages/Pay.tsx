@@ -5,7 +5,7 @@ import {
   Users,
   Clock
 } from 'lucide-react';
-import { getEmployees, getShifts, getDepartments } from '../services/dataService';
+import { getEmployees, getShifts, getDepartments, formatLocalDate } from '../services/dataService';
 import type { Employee, Shift, Department } from '../types';
 
 const Pay: React.FC = () => {
@@ -13,7 +13,7 @@ const Pay: React.FC = () => {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('month');
+  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'fortnight'>('fortnight');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
   useEffect(() => {
@@ -56,9 +56,14 @@ const Pay: React.FC = () => {
     startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const startOfFortnight = new Date(startOfWeek);
+    const endOfFortnight = new Date(startOfFortnight);
+    endOfFortnight.setDate(startOfFortnight.getDate() + 13);
 
     if (selectedPeriod === 'month') {
       return date.getFullYear() === year && date.getMonth() === month;
+    } else if (selectedPeriod === 'fortnight') {
+      return date >= startOfFortnight && date <= endOfFortnight;
     } else {
       return date >= startOfWeek && date <= endOfWeek;
     }
@@ -113,6 +118,12 @@ const Pay: React.FC = () => {
   const formatDateRange = (): string => {
     if (selectedPeriod === 'month') {
       return currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    } else if (selectedPeriod === 'fortnight') {
+      const start = new Date(currentDate);
+      start.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 13);
+      return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
     } else {
       const start = new Date(currentDate);
       start.setDate(currentDate.getDate() - currentDate.getDay() + 1);
@@ -126,6 +137,8 @@ const Pay: React.FC = () => {
     const newDate = new Date(currentDate);
     if (selectedPeriod === 'month') {
       newDate.setMonth(newDate.getMonth() - 1);
+    } else if (selectedPeriod === 'fortnight') {
+      newDate.setDate(newDate.getDate() - 14);
     } else {
       newDate.setDate(newDate.getDate() - 7);
     }
@@ -136,6 +149,8 @@ const Pay: React.FC = () => {
     const newDate = new Date(currentDate);
     if (selectedPeriod === 'month') {
       newDate.setMonth(newDate.getMonth() + 1);
+    } else if (selectedPeriod === 'fortnight') {
+      newDate.setDate(newDate.getDate() + 14);
     } else {
       newDate.setDate(newDate.getDate() + 7);
     }
@@ -227,6 +242,12 @@ const Pay: React.FC = () => {
             </button>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === 'fortnight' ? 'bg-black text-white' : 'bg-white border border-gray-200 text-black hover:bg-gray-50'}`}
+              onClick={() => setSelectedPeriod('fortnight')}
+            >
+              Fortnightly
+            </button>
             <button
               className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${selectedPeriod === 'month' ? 'bg-black text-white' : 'bg-white border border-gray-200 text-black hover:bg-gray-50'}`}
               onClick={() => setSelectedPeriod('month')}
